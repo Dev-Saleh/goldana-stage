@@ -1,26 +1,29 @@
-name: Deploy to Staging Server
+name: Deploy to Hostinger
 
 on:
   push:
     branches:
-      - main
- 
+      - main  # Deploy only when the main branch is updated
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Deploy to Staging via SSH
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.HOST }}       
-        username: ${{ secrets.USERNAME }}  
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 65002
-        script: |
-          cd /home/u434968181/domains/goldaana.com/public_html/stage
-          git pull origin main
+      # Deploy files to Hostinger
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: 82.112.239.93
+          username: u434968181
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 65002
+          script: |
+            cd /home/u434968181/domains/goldaana.com/public_html/stage
+            git reset --hard
+            git pull origin main
 
