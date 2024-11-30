@@ -20,7 +20,7 @@ jobs:
         with:
           host: 82.112.239.93
           username: u434968181
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 65002
           script: |
             cd /home/u434968181/domains/goldaana.com/public_html/stage
