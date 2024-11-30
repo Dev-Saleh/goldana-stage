@@ -18,7 +18,7 @@ function enqueue_custom_inline_script() {
         jQuery(document).ready(function($){ 
          $(document).on('et_ajax_element_loaded', function (event, data) {
                 if (data.element == 'etheme_products'){
-                    console.log('custom code started to show');
+                    console.log('custom code started to show tap');
                 }
                 });
     /*-------------------------------------------------------------------*/

@@ -402,20 +402,26 @@ async function initiateWebSocketConnection() {
 
 
 /*-------------------------------------------------------------------------------------------------------------------*/
-
+let time = 0;
 document.addEventListener('DOMContentLoaded', () => {
   const todayUTC = new Date();
   const dayOfWeekUTC = todayUTC.getUTCDay(); // Returns 0 (Sunday) to 6 (Saturday)
 
-     e();
+   
   if (dayOfWeekUTC !== 0 && dayOfWeekUTC !== 6) {
     // Day is not Sunday (0) or Saturday (6)
+    this.time = 1;
     initiateWebSocketConnection();
   } else {
     // fixedPrice();
+    
     console.log('Today (UTC) is Saturday or Sunday. Function not executed.');
   }
+  
+  if(this.time === 0)
+    e();
 });
+
 
 document.addEventListener('etheme_product_grid_ajax_loaded', function() {
     console.log('1233333333333333333333333333333333333333333333333333');

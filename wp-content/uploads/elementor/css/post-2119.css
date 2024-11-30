@@ -12,3 +12,11 @@
         margin-left: 0px;
     }
 }/* End custom CSS */
+/* Start Custom Fonts CSS */@font-face {
+	font-family: 'goldana IBM';
+	font-style: normal;
+	font-weight: normal;
+	font-display: auto;
+	src: url('https://stage.goldaana.com/wp-content/uploads/2024/10/Effra_Rg.ttf') format('truetype');
+}
+/* End Custom Fonts CSS */
