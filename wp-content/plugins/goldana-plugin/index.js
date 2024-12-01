@@ -1,4 +1,3 @@
-
 async function startSession() {
   try {
     const response = await fetch(
@@ -31,81 +30,78 @@ async function startSession() {
   }
 }
 function e() {
-    try {
-        const updateProductPrices = () => {
-            const elements = document.querySelectorAll('.wc-block-components-product-price:not([data-updated])');
-            elements.forEach((element) => {
-                element.innerHTML = `<p>يتم جلب السعر...</p>`;
-                element.setAttribute('data-updated', 'true');
-            });
-        };
+  try {
+    const updateProductPrices = () => {
+      const elements = document.querySelectorAll(
+        '.wc-block-components-product-price:not([data-updated])'
+      );
+      elements.forEach((element) => {
+        element.innerHTML = `<p>يتم جلب السعر...</p>`;
+        element.setAttribute('data-updated', 'true');
+      });
+    };
 
-        updateProductPrices();
+    updateProductPrices();
 
-        const observer = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    updateProductPrices();
-                }
-            }
-        });
-
-        const productContainer = document.querySelector('.etheme-product-grid');
-        if (productContainer) {
-            observer.observe(productContainer, { childList: true });
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          updateProductPrices();
         }
-    } catch (error) {
-        console.error('Error starting session:', error);
+      }
+    });
+
+    const productContainer = document.querySelector('.etheme-product-grid');
+    if (productContainer) {
+      observer.observe(productContainer, { childList: true });
     }
+  } catch (error) {
+    console.error('Error starting session:', error);
+  }
 }
-
-
 
 /*------------------------------------------------------------------------------------------------------------------*/
 
-
 function renderProductPrice(elements, livePrice_24, calculatedValue, color) {
   elements.forEach((element) => {
-      
     const weight = parseFloat(element.getAttribute('data-product-weight')) || 1;
-    const manufacturingFees = parseFloat(element.getAttribute('data-product-manufacturing-fees')) || 1;
-    const goldCarat = parseInt(element.getAttribute('data-product-gold-carat')) ;
+    const manufacturingFees =
+      parseFloat(element.getAttribute('data-product-manufacturing-fees')) || 1;
+    const goldCarat = parseInt(element.getAttribute('data-product-gold-carat'));
 
-// console.log("Raw gold carat attribute:", element.getAttribute('data-product-gold-carat'));
-// console.log("Element being processed:", element);
-// console.log(goldCarat);
-    
+    // console.log("Raw gold carat attribute:", element.getAttribute('data-product-gold-carat'));
+    // console.log("Element being processed:", element);
+    // console.log(goldCarat);
+
     switch (goldCarat) {
       case 18: {
         const livePrice_18 = livePrice_24 * 0.75;
         const value_18 = weight * (manufacturingFees + livePrice_18) * 1.15;
-    
+
         // Adjusting calculatedValue based on the color
         calculatedValue = color === '#10B981' ? value_18 + 2 : value_18 - 2;
         break;
       }
-    
+
       case 21: {
         const livePrice_21 = livePrice_24 * 0.875;
         const value_21 = weight * (manufacturingFees + livePrice_21) * 1.15;
-    
+
         // Adjusting calculatedValue based on the color
         calculatedValue = color === '#10B981' ? value_21 + 2 : value_21 - 2;
         break;
       }
-    
+
       case 24: {
         calculatedValue = livePrice_24 * weight;
         break;
       }
-    
+
       default:
-      calculatedValue = 'بيانات ناقصه';
+        calculatedValue = 'بيانات ناقصه';
         // console.warn('Invalid gold carat value:', goldCarat);
         break;
     }
-    
-
 
     const displayValue =
       typeof calculatedValue === 'number'
@@ -183,55 +179,49 @@ function renderProductPrice(elements, livePrice_24, calculatedValue, color) {
   });
 }
 
-
-
 /*-------------------------------------------------------------------------------------------------------------------*/
-
 
 async function initiateWebSocketConnection() {
   try {
     let cst = localStorage.getItem('CST');
     let securityToken = localStorage.getItem('TOKEN');
-    
-     if (!cst || !securityToken) {
-        console.log('start new Session ...');
-        const sessionData = await startSession();
-        cst = sessionData.cst;
-        securityToken = sessionData.securityToken;
-        localStorage.setItem('CST', cst);
-        localStorage.setItem('TOKEN', securityToken);
+
+    if (!cst || !securityToken) {
+      console.log('start new Session ...');
+      const sessionData = await startSession();
+      cst = sessionData.cst;
+      securityToken = sessionData.securityToken;
+      localStorage.setItem('CST', cst);
+      localStorage.setItem('TOKEN', securityToken);
     }
     // sendTokensToBackend();
 
     const ws = new WebSocket(
       'wss://api-streaming-capital.backend-capital.com/connect'
     );
-    
-  ws.onopen =  () => {
-    if (!localStorage.getItem('CST') || !localStorage.getItem('TOKEN')) {
+
+    ws.onopen = () => {
+      if (!localStorage.getItem('CST') || !localStorage.getItem('TOKEN')) {
         console.log('no CST and TOKEN start new Session from onOpen ...');
-        // const sessionData = await startSession(); 
+        // const sessionData = await startSession();
         // cst = sessionData.cst;
         // securityToken = sessionData.securityToken;
         // localStorage.setItem('CST', cst);
         // localStorage.setItem('TOKEN', securityToken);
-    }
-    else {
-         console.log('CST & TOKEN is in storge');
-   
-    
-    const subscriptionMessage = {
-        destination: 'marketData.subscribe',
-        correlationId: '100',
-        cst,
-        securityToken,
-        payload: { epics: ['GOLD'] },
-    };
-    ws.send(JSON.stringify(subscriptionMessage));
-    console.log('WebSocket connection opened');
-    }
-};
+      } else {
+        console.log('CST & TOKEN is in storge');
 
+        const subscriptionMessage = {
+          destination: 'marketData.subscribe',
+          correlationId: '100',
+          cst,
+          securityToken,
+          payload: { epics: ['GOLD'] },
+        };
+        ws.send(JSON.stringify(subscriptionMessage));
+        console.log('WebSocket connection opened');
+      }
+    };
 
     let prev = 0;
 
@@ -239,11 +229,10 @@ async function initiateWebSocketConnection() {
       try {
         const data = JSON.parse(event.data);
         if (data.status === 'OK') {
-          const livePrice_24 = ( data.payload.bid * 121 ) / 1000;
-            
-   
+          const livePrice_24 = (data.payload.bid * 121) / 1000;
+
           console.log('WebSocket message received:', livePrice_24);
-          
+
           let calculatedValue = 1;
           const difference = livePrice_24 - (this.prev + 0.001);
           let color = difference < 0 ? '#F43F5E' : '#10B981';
@@ -251,8 +240,6 @@ async function initiateWebSocketConnection() {
 
           const elements = document.querySelectorAll('#livePriceEl');
           renderProductPrice(elements, livePrice_24, calculatedValue, color);
-
-       
         } else if (data.payload.errorCode === 'error.invalid.session.token') {
           localStorage.removeItem('CST');
           localStorage.removeItem('TOKEN');
@@ -267,13 +254,13 @@ async function initiateWebSocketConnection() {
     };
 
     ws.onclose = () => {
-         localStorage.removeItem('CST');
+      localStorage.removeItem('CST');
       localStorage.removeItem('TOKEN');
       console.log('WebSocket connection closed');
     };
 
     // setTimeout(() => {
-        // ping();
+    // ping();
     //   ws.close();
     //   localStorage.removeItem('CST');
     //   localStorage.removeItem('TOKEN');
@@ -306,7 +293,6 @@ async function initiateWebSocketConnection() {
 //     return false;
 //   }
 // }
-
 
 // async function initiateWebSocketConnection() {
 //   try {
@@ -399,34 +385,28 @@ async function initiateWebSocketConnection() {
 //   }
 // }
 
-
-
 /*-------------------------------------------------------------------------------------------------------------------*/
 let time = 0;
 document.addEventListener('DOMContentLoaded', () => {
   const todayUTC = new Date();
   const dayOfWeekUTC = todayUTC.getUTCDay(); // Returns 0 (Sunday) to 6 (Saturday)
 
-   
   if (dayOfWeekUTC !== 0 && dayOfWeekUTC !== 6) {
     // Day is not Sunday (0) or Saturday (6)
     this.time = 1;
     initiateWebSocketConnection();
   } else {
     // fixedPrice();
-    
+
     console.log('Today (UTC) is Saturday or Sunday. Function not executed.');
   }
-  
-  if(this.time === 0)
-    e();
+  console.log(this.time);
+  if (this.time === 0) e();
 });
 
-
-document.addEventListener('etheme_product_grid_ajax_loaded', function() {
-    console.log('1233333333333333333333333333333333333333333333333333');
+document.addEventListener('etheme_product_grid_ajax_loaded', function () {
+  console.log('1233333333333333333333333333333333333333333333333333');
 });
-
 
 // document.addEventListener('ajaxComplete', () => {
 //     const elements = document.querySelectorAll('.wc-block-components-product-price');
@@ -434,15 +414,3 @@ document.addEventListener('etheme_product_grid_ajax_loaded', function() {
 //         element.innerHTML = `<p>يتم جلب السعر...</p>`;
 //     });
 // });
-
-
-
-
-
-
-
-
-
-
-
-
