@@ -391,6 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const todayUTC = new Date();
   const dayOfWeekUTC = todayUTC.getUTCDay(); // Returns 0 (Sunday) to 6 (Saturday)
 
+  console.log('zxc');
+
   if (dayOfWeekUTC !== 0 && dayOfWeekUTC !== 6) {
     // Day is not Sunday (0) or Saturday (6)
     this.time = 1;
