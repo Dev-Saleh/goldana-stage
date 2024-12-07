@@ -29,7 +29,7 @@ async function startSession() {
     throw error;
   }
 }
-function e() {
+function injection_liveprice_fetching() {
   try {
     const updateProductPrices = () => {
       const elements = document.querySelectorAll(
@@ -180,37 +180,36 @@ function renderProductPrice(elements, livePrice_24, calculatedValue, color) {
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
+let ws; // Declare WebSocket variable outside the function for global scope.
 
 async function initiateWebSocketConnection() {
   try {
+    // Close any existing WebSocket connection
+    if (ws && ws.readyState !== WebSocket.CLOSED) {
+      console.log('Closing existing WebSocket connection...');
+      ws.close();
+    }
+
     let cst = localStorage.getItem('CST');
     let securityToken = localStorage.getItem('TOKEN');
 
     if (!cst || !securityToken) {
-      console.log('start new Session ...');
+      console.log('Start new session...');
       const sessionData = await startSession();
       cst = sessionData.cst;
       securityToken = sessionData.securityToken;
       localStorage.setItem('CST', cst);
       localStorage.setItem('TOKEN', securityToken);
     }
-    // sendTokensToBackend();
 
-    const ws = new WebSocket(
-      'wss://api-streaming-capital.backend-capital.com/connect'
-    );
+    // Initialize the WebSocket connection
+    ws = new WebSocket('wss://api-streaming-capital.backend-capital.com/connect');
 
     ws.onopen = () => {
       if (!localStorage.getItem('CST') || !localStorage.getItem('TOKEN')) {
-        console.log('no CST and TOKEN start new Session from onOpen ...');
-        // const sessionData = await startSession();
-        // cst = sessionData.cst;
-        // securityToken = sessionData.securityToken;
-        // localStorage.setItem('CST', cst);
-        // localStorage.setItem('TOKEN', securityToken);
+        console.log('No CST and TOKEN. Start new session from onOpen...');
       } else {
-        console.log('CST & TOKEN is in storge');
-
+        console.log('CST & TOKEN are in storage');
         const subscriptionMessage = {
           destination: 'marketData.subscribe',
           correlationId: '100',
@@ -229,17 +228,15 @@ async function initiateWebSocketConnection() {
       try {
         const data = JSON.parse(event.data);
         if (data.status === 'OK') {
-          const livePrice_24 = (data.payload.bid * 121) / 1000;
-
+          const livePrice_24 = (data.payload.bid * 121.5) / 1000;
           console.log('WebSocket message received:', livePrice_24);
 
-          let calculatedValue = 1;
-          const difference = livePrice_24 - (this.prev + 0.001);
-          let color = difference < 0 ? '#F43F5E' : '#10B981';
-          this.prev = livePrice_24;
+          const difference = livePrice_24 - (prev + 0.001);
+          const color = difference < 0 ? '#F43F5E' : '#10B981';
+          prev = livePrice_24;
 
           const elements = document.querySelectorAll('#livePriceEl');
-          renderProductPrice(elements, livePrice_24, calculatedValue, color);
+          renderProductPrice(elements, livePrice_24, 1, color);
         } else if (data.payload.errorCode === 'error.invalid.session.token') {
           localStorage.removeItem('CST');
           localStorage.removeItem('TOKEN');
@@ -254,165 +251,101 @@ async function initiateWebSocketConnection() {
     };
 
     ws.onclose = () => {
-      localStorage.removeItem('CST');
-      localStorage.removeItem('TOKEN');
       console.log('WebSocket connection closed');
     };
 
-    // setTimeout(() => {
-    // ping();
-    //   ws.close();
-    //   localStorage.removeItem('CST');
-    //   localStorage.removeItem('TOKEN');
-    //   initiateWebSocketConnection();
-    // },  10000); // Reconnect after 10 minutes 9 * 60 *
+    // Add event to close WebSocket connection when page is unloaded
+    window.onbeforeunload = () => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log('Page is unloading, closing WebSocket connection...');
+        ws.close();
+      }
+    };
+
   } catch (error) {
-    console.error(
-      'Failed to start session or establish WebSocket connection:',
-      error
-    );
+    console.error('Failed to start session or establish WebSocket connection:', error);
   }
 }
 
-// let ws; // تعريف WebSocket كمتغير عام
 
-// async function verifySession(cst, token) {
-//   // التحقق من صحة الجلسة
-//   try {
-//     const response = await fetch('https://api.example.com/verify-session', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'CST': cst,
-//         'Authorization': `Bearer ${token}`,
-//       },
-//     });
-//     return response.ok; // الجلسة صالحة إذا كانت الاستجابة ناجحة
-//   } catch (error) {
-//     console.error('Error verifying session:', error);
-//     return false;
-//   }
-// }
+function injection_top_bar(){
+     
+     const pageWrapper = document.querySelector("body .content-page .sidebar-position-without .row .content div section");
+     console.log(pageWrapper);
+    if(pageWrapper)
+    {
+         const marquee = document.createElement("div");
+          marquee.id = "announcement";
+          marquee.innerHTML = `
+            
+          <span> 🤗 سعر البورصه متوقف يتم تثبيت اخر سعر للبورصه</span>
+        
+        
+        <style>
+          #announcement {
+            background-color: yellow;
+            color: #ef4444;
+            padding: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            top: 0;
+            left: 0;
+            width: 100%;
+            // z-index: ;
+            margin: 5px 0px;
+          }
+        
+          #announcement span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 14s linear infinite;
+          }
+        
+          @keyframes marquee {
+            from {
+              transform: translateX(-50%);
+            }
+            to {
+              transform: translateX(50%);
+            }
+          }
+        </style>
 
-// async function initiateWebSocketConnection() {
-//   try {
-//     // أغلق أي اتصال WebSocket موجود
-//     if (ws && ws.readyState !== WebSocket.CLOSED) {
-//       console.log('Closing existing WebSocket connection...');
-//       ws.close();
-//     }
+  
+  `;
+   pageWrapper.insertAdjacentElement("afterend", marquee);
+    }
+ 
 
-//     let cst = localStorage.getItem('CST');
-//     let token = localStorage.getItem('TOKEN');
 
-//     if (!cst || !token ) {
-//     // if (!cst || !token || !(await verifySession(cst, token))) {
-//       console.log('Session no in storage, starting a new session...');
-//       const sessionData = await startSession();
-//       cst = sessionData.cst;
-//       token = sessionData.securityToken;
-//       localStorage.setItem('CST', cst);
-//       localStorage.setItem('TOKEN', token);
-//     }
-
-//     // إنشاء اتصال WebSocket جديد
-//     ws = new WebSocket('wss://api-streaming-capital.backend-capital.com/connect');
-
-//     ws.onopen = () => {
-//       console.log('WebSocket connection opened');
-//       if (ws.readyState === WebSocket.OPEN) {
-//         const subscriptionMessage = {
-//           destination: 'marketData.subscribe',
-//           correlationId: '100',
-//           cst,
-//           securityToken: token,
-//           payload: { epics: ['GOLD'] },
-//         };
-//         ws.send(JSON.stringify(subscriptionMessage));
-//         console.log('Subscription message sent');
-//       }
-//     };
-
-//     ws.onmessage = (event) => {
-//       try {
-//         const data = JSON.parse(event.data);
-
-//         if (data.status === 'OK') {
-//                  const livePrice_24 = ( data.payload.bid * 121.5 ) / 1000;
-//           console.log('WebSocket message received:', livePrice_24);
-
-//           let calculatedValue = 0;
-//           const difference = livePrice_24 - (this.prev || 0);
-//           const color = difference < 0 ? '#F43F5E' : '#10B981';
-//           this.prev = livePrice_24;
-
-//           const elements = document.querySelectorAll('#livePriceEl');
-//           renderProductPrice(elements, livePrice_24, calculatedValue, color);
-//         // } else if (data.payload.errorCode === 'error.invalid.session.token') {
-//         //   console.log('Invalid session token, clearing localStorage...');
-//         //   localStorage.removeItem('CST');
-//         //   localStorage.removeItem('TOKEN');
-//         }
-//       }
-//       catch (e) {
-//         console.error('Error parsing WebSocket message:', e);
-//       }
-//     };
-
-//     ws.onerror = (error) => {
-//       console.error('WebSocket error:', error);
-//     };
-
-//     ws.onclose = () => {
-//       console.log('WebSocket connection closed, retrying in 5 seconds...');
-//       setTimeout(() => {
-//         initiateWebSocketConnection(); // إعادة محاولة الاتصال
-//       }, 2000);
-//     };
-
-//     // إغلاق WebSocket عند مغادرة الصفحة
-//     window.addEventListener('beforeunload', () => {
-//       if (ws) {
-//         console.log('Closing WebSocket due to page unload...');
-//         ws.close();
-//       }
-//     });
-//   } catch (error) {
-//     console.error(
-//       'Failed to start session or establish WebSocket connection:',
-//       error
-//     );
-//   }
-// }
-
+}
 /*-------------------------------------------------------------------------------------------------------------------*/
-let time = 0;
 document.addEventListener('DOMContentLoaded', () => {
-  const todayUTC = new Date();
-  const dayOfWeekUTC = todayUTC.getUTCDay(); // Returns 0 (Sunday) to 6 (Saturday)
+        
+        const todayUTC = new Date();
+        const dayOfWeekUTC = todayUTC.getUTCDay(); // Returns 0 (Sunday) to 6 (Saturday)
+        const hoursUTC = todayUTC.getUTCHours();
+        const minutesUTC = todayUTC.getUTCMinutes();
+        
+        // Helper to check if current time is within trading hours
+        function isMarketOpen(day, hours, minutes) {
+          // Market closes on Saturday at 00:59 UTC and opens on Monday at 02:00 UTC
+          if (day === 0) return false; // Sunday - market is closed
+          if (day === 6 && (hours > 0 || (hours === 0 && minutes > 59))) return false; // After Saturday 00:59 UTC
+          if (day === 1 && (hours < 2)) return false; // Before Monday 02:00 UTC
+          return true;
+        }
+        
+        if (isMarketOpen(dayOfWeekUTC, hoursUTC, minutesUTC)) {
+            injection_liveprice_fetching();
+          initiateWebSocketConnection(); // Market is open
+          console.log('Market is open. WebSocket connection initiated.');
+        } else {
+          injection_top_bar(); // Market is closed
+          console.log('Market is closed. Showing the top bar.');
+        }
 
-  console.log('zxc');
-
-  if (dayOfWeekUTC !== 0 && dayOfWeekUTC !== 6) {
-    // Day is not Sunday (0) or Saturday (6)
-    this.time = 1;
-    initiateWebSocketConnection();
-  } else {
-    // fixedPrice();
-
-    console.log('Today (UTC) is Saturday or Sunday. Function not executed.');
-  }
-  console.log(this.time);
-  if (this.time === 0) e();
 });
-
-document.addEventListener('etheme_product_grid_ajax_loaded', function () {
-  console.log('1233333333333333333333333333333333333333333333333333');
-});
-
-// document.addEventListener('ajaxComplete', () => {
-//     const elements = document.querySelectorAll('.wc-block-components-product-price');
-//     elements.forEach((element) => {
-//         element.innerHTML = `<p>يتم جلب السعر...</p>`;
-//     });
-// });
