@@ -30,6 +30,34 @@ async function startSession() {
     throw error;
   }
 }
+ try {
+    const updateProductPrices = () => {
+      const elements = document.querySelectorAll(
+        '.wc-block-components-product-price:not([data-updated])'
+      );
+      elements.forEach((element) => {
+        element.innerHTML = `<p>يتم جلب السعر المباشر..</p>`;
+        element.setAttribute('data-updated', 'true');
+      });
+    };
+
+    updateProductPrices();
+
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          updateProductPrices();
+        }
+      }
+    });
+
+    const productContainer = document.querySelector('.etheme-product-grid');
+    if (productContainer) {
+      observer.observe(productContainer, { childList: true });
+    }
+  } catch (error) {
+    console.error('Error starting session:', error);
+  }
 function e() {
     try {
         const updateProductPrices = () => {

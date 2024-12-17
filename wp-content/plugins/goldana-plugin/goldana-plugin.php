@@ -9,7 +9,6 @@ Author: Dev Saleh
 
 
 
-
 function my_custom_plugin_enqueue_scripts() {
     $scripts = array(
         'index' => 'index.js',
@@ -18,13 +17,17 @@ function my_custom_plugin_enqueue_scripts() {
     );
 
     foreach ($scripts as $handle => $file) {
+        // Dynamically enqueue each script
         wp_enqueue_script(
-            "my-custom-plugin-$handle", 
-            plugin_dir_url(__FILE__) . $file, 
-            array('jquery'), // Dependencies
-            16.3, 
-            false // Load in the footer
+            "my-custom-plugin-$handle",                     // Script handle
+            plugin_dir_url(__FILE__) . $file,               // Script URL
+            array('jquery'),                                // Dependencies
+            '19.2',                                        // Version
+            false                                            // Load in the footer
         );
+
+        // Mark the script as a module
+        // wp_script_add_data("my-custom-plugin-$handle", 'type', 'module');
     }
 }
 add_action('wp_enqueue_scripts', 'my_custom_plugin_enqueue_scripts');
@@ -59,15 +62,15 @@ function get_attribute_value_from_attributes($attributes, $product_id, $attribut
    
 }
 
-
 add_filter('woocommerce_get_price_html', 'add_custom_data_attributes_to_price_html', 10, 2);
 function add_custom_data_attributes_to_price_html($price, $product) {
- 
+
     if (!$product) {
         return $price; 
     }
-	
+
     $product_id = $product->get_id(); 
+    $fixed_price = get_option('fixed-livePrice'); // Retrieve fixed price option
 
     // Cache product attributes and weight for better performance
     $attributes = $product->get_attributes();
@@ -85,6 +88,7 @@ function add_custom_data_attributes_to_price_html($price, $product) {
     $weight = !empty($weight) ? $weight : 'N/A';
     $gold_carat = !empty($gold_carat) ? $gold_carat : 'N/A';
     $manufacturing_fees = !empty($manufacturing_fees) ? $manufacturing_fees : 'N/A';
+    $fixed_price = !empty($fixed_price) ? $fixed_price : 'N/A';
 
     // Append custom data attributes to the price HTML
     return sprintf(
@@ -92,16 +96,16 @@ function add_custom_data_attributes_to_price_html($price, $product) {
             data-product-id="%1$s" 
             data-product-weight="%2$s" 
             data-product-gold-carat="%3$s" 
-            data-product-manufacturing-fees="%4$s">%5$s</div>',
+            data-product-manufacturing-fees="%4$s"
+            data-fixed-price="%5$s">%6$s</div>',
         esc_attr($product_id),               // Product ID
         esc_attr($weight),                   // Product weight
         esc_attr($gold_carat),               // Gold carat value
         esc_attr($manufacturing_fees),       // Manufacturing fees
+        esc_attr($fixed_price),              // Fixed price
         $price                               // Original price HTML from WooCommerce
     );
 }
-
-
 /*-----------------------------------------------------------------------------------------------*/
 
 function calculate_price($c, $live_price_24, $weight = 1, $manufacturingFees = 0) {

@@ -97,10 +97,10 @@ $table_prefix = 'wp_';
  * @link https://wordpress.org/support/article/debugging-in-wordpress/
  */
 if ( ! defined( 'WP_DEBUG' ) ) {
-	define( 'WP_DEBUG', true );
+// 	define( 'WP_DEBUG', true );
 }
-define( 'WP_DEBUG_LOG', true );
-define( 'WP_DEBUG_DISPLAY', true ); // Set to false to prevent errors from displaying on the front end
+define( 'WP_DEBUG_LOG', false );
+define( 'WP_DEBUG_DISPLAY', false ); // Set to false to prevent errors from displaying on the front end
 
 define( 'FS_METHOD', 'direct' );
 define( 'COOKIEHASH', '7b8a5de470b2b9037c09060d307be407' );

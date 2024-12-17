@@ -1,3 +1,5 @@
+
+
 async function startSession() {
   try {
     const response = await fetch(
@@ -29,14 +31,98 @@ async function startSession() {
     throw error;
   }
 }
-function injection_liveprice_fetching() {
+function injection_label_liveprice_fetching() {
   try {
     const updateProductPrices = () => {
+        let calculatedFixedPrice = 0;
       const elements = document.querySelectorAll(
-        '.wc-block-components-product-price:not([data-updated])'
+        '#livePriceEl:not([data-updated])'
       );
       elements.forEach((element) => {
-        element.innerHTML = `<p>يتم جلب السعر...</p>`;
+       
+        const weight = parseFloat(element.getAttribute('data-product-weight')) || 1;
+        const manufacturingFees = parseFloat(element.getAttribute('data-product-manufacturing-fees')) || 1;
+        const goldCarat = parseInt(element.getAttribute('data-product-gold-carat'));
+        const fixed_price_24 = parseFloat(element.getAttribute('data-fixed-price')) || 0;
+
+        switch (goldCarat) {
+            case 18: {
+                const livePrice_18 = fixed_price_24 * 0.75;
+                calculatedFixedPrice = weight * (manufacturingFees + livePrice_18) * 1.15;
+                console.log('18', calculatedFixedPrice);
+                break;
+            }
+
+            case 21: {
+                const livePrice_21 = fixed_price_24 * 0.875;
+                calculatedFixedPrice = weight * (manufacturingFees + livePrice_21) * 1.15;
+                console.log('21', calculatedFixedPrice);
+                break;
+            }
+
+            case 24: {
+                calculatedFixedPrice = fixed_price_24 * weight;
+                break;
+            }
+
+            default: {
+                calculatedFixedPrice = 0; // Default to 0 for invalid data
+                console.warn('Invalid gold carat value or missing data:', goldCarat);
+                break;
+            }
+        }
+
+        // Ensure the calculatedFixedPrice is a number
+        const displayPrice = calculatedFixedPrice.toFixed(2);
+
+        // Insert the calculated value into the HTML
+        element.innerHTML = `
+            <style>
+                /* Container for price and indicator */
+                .price-indicator {
+                    display: flex;
+                    align-items: center;
+                    font-family: 'Arial', sans-serif;
+                    font-size: 1.3rem;
+                }
+
+                /* Price text */
+                .pricee {
+                    font-weight: bold !important;
+                    font-size: 1.4rem !important;
+                    margin: 0px !important;
+                    color: red !important;
+                }
+
+                .arrow {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1rem;
+                    transition: transform 0.3s ease, color 0.3s ease;
+                }
+
+                .up {
+                    color: #10b981;
+                }
+
+                .down {
+                    color: #ef4444;
+                }
+
+                .curencyy {
+                    margin-right: 4px;
+                    font-size: 1.2rem;
+                }
+            </style>
+            
+            <div class="price-indicator">
+                <span class="arrow down" id="arrow">▼</span>
+                <span class="pricee">${displayPrice}</span>
+                <span class="curencyy" id="curency">ر.س</span>
+            </div>
+        `;
+    
         element.setAttribute('data-updated', 'true');
       });
     };
@@ -58,6 +144,94 @@ function injection_liveprice_fetching() {
   } catch (error) {
     console.error('Error starting session:', error);
   }
+}
+function injectionFixedLivePrice() {
+    let calculatedFixedPrice = 0;
+    const fixedElements = document.querySelectorAll('#livePriceEl');
+    fixedElements.forEach((element) => {
+        const weight = parseFloat(element.getAttribute('data-product-weight')) || 1;
+        const manufacturingFees = parseFloat(element.getAttribute('data-product-manufacturing-fees')) || 1;
+        const goldCarat = parseInt(element.getAttribute('data-product-gold-carat'));
+        const fixed_price_24 = parseFloat(element.getAttribute('data-fixed-price')) || 0;
+
+        switch (goldCarat) {
+            case 18: {
+                const livePrice_18 = fixed_price_24 * 0.75;
+                calculatedFixedPrice = weight * (manufacturingFees + livePrice_18) * 1.15;
+                console.log('18', calculatedFixedPrice);
+                break;
+            }
+
+            case 21: {
+                const livePrice_21 = fixed_price_24 * 0.875;
+                calculatedFixedPrice = weight * (manufacturingFees + livePrice_21) * 1.15;
+                console.log('21', calculatedFixedPrice);
+                break;
+            }
+
+            case 24: {
+                calculatedFixedPrice = fixed_price_24 * weight;
+                break;
+            }
+
+            default: {
+                calculatedFixedPrice = 0; // Default to 0 for invalid data
+                console.warn('Invalid gold carat value or missing data:', goldCarat);
+                break;
+            }
+        }
+
+        // Ensure the calculatedFixedPrice is a number
+        const displayPrice = calculatedFixedPrice.toFixed(2);
+
+        // Insert the calculated value into the HTML
+        element.innerHTML = `
+            <style>
+                /* Container for price and indicator */
+                .price-indicator {
+                    display: flex;
+                    align-items: center;
+                    font-family: 'Arial', sans-serif;
+                    font-size: 1.3rem;
+                }
+
+                /* Price text */
+                .pricee {
+                    font-weight: bold !important;
+                    font-size: 1.4rem !important;
+                    margin: 0px !important;
+                    color: red !important;
+                }
+
+                .arrow {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1rem;
+                    transition: transform 0.3s ease, color 0.3s ease;
+                }
+
+                .up {
+                    color: #10b981;
+                }
+
+                .down {
+                    color: #ef4444;
+                }
+
+                .curencyy {
+                    margin-right: 4px;
+                    font-size: 1.2rem;
+                }
+            </style>
+            
+            <div class="price-indicator">
+                <span class="arrow down" id="arrow">▼</span>
+                <span class="pricee">${displayPrice}</span>
+                <span class="curencyy" id="curency">ر.س</span>
+            </div>
+        `;
+    });
 }
 
 /*------------------------------------------------------------------------------------------------------------------*/
@@ -124,7 +298,7 @@ function renderProductPrice(elements, livePrice_24, calculatedValue, color) {
                 /* Price text */
                 .pricee {
                     font-weight: bold !important;
-                      font-size: 1.25rem; !important;
+                      font-size: 1.4rem; !important;
                     margin: 0px !important;
                   color: ${color} !important;
                 }
@@ -270,21 +444,22 @@ async function initiateWebSocketConnection() {
 
 function injection_top_bar(){
      
-     const pageWrapper = document.querySelector("body .content-page .sidebar-position-without .row .content div section");
-     console.log(pageWrapper);
+    //  const pageWrapper = document.querySelector("body .content-page .sidebar-position-without .row .content div section");
+     const pageWrapper = document.querySelector("body .template-container .template-content .page-wrapper .etheme-elementor-header-sticky");
+  
     if(pageWrapper)
     {
          const marquee = document.createElement("div");
           marquee.id = "announcement";
           marquee.innerHTML = `
             
-          <span> 🤗 سعر البورصه متوقف يتم تثبيت اخر سعر للبورصه</span>
+          <span> تتوقف سعر البورصه يومي السبت الاحد والساعه 01:00 صباحا </span>
         
         
         <style>
           #announcement {
-            background-color: yellow;
-            color: #ef4444;
+            background-color: #ef4444;
+            color: #fef2f2;
             padding: 5px;
             font-weight: bold;
             font-size: 14px;
@@ -295,7 +470,7 @@ function injection_top_bar(){
             left: 0;
             width: 100%;
             // z-index: ;
-            margin: 5px 0px;
+            margin: 0px 0px;
           }
         
           #announcement span {
@@ -316,13 +491,30 @@ function injection_top_bar(){
 
   
   `;
-   pageWrapper.insertAdjacentElement("afterend", marquee);
+  pageWrapper.insertAdjacentElement("afterend", marquee);
     }
  
 
 
 }
 /*-------------------------------------------------------------------------------------------------------------------*/
+
+        jQuery(document).ready(function($){ 
+         $(document).on('et_ajax_element_loaded', function (event, data) {
+                if (data.element == 'etheme_products'){
+                    
+                     injectionFixedLivePrice();
+                }
+                });
+   
+			$(document).on('etheme_product_grid_ajax_loaded', function() {
+			    
+                injectionFixedLivePrice();
+        	})
+		});
+    
+
+
 document.addEventListener('DOMContentLoaded', () => {
         
         const todayUTC = new Date();
@@ -340,10 +532,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (isMarketOpen(dayOfWeekUTC, hoursUTC, minutesUTC)) {
-            injection_liveprice_fetching();
+            injection_label_liveprice_fetching();
           initiateWebSocketConnection(); // Market is open
           console.log('Market is open. WebSocket connection initiated.');
         } else {
+          injectionFixedLivePrice();
           injection_top_bar(); // Market is closed
           console.log('Market is closed. Showing the top bar.');
         }

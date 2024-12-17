@@ -7,38 +7,22 @@ function theme_enqueue_styles() {
 }
 
 
-function enqueue_custom_inline_script() {
-   
-    wp_enqueue_script('jquery');
-    
-  
-    $custom_js = "
-    const updateProductPrices = () => {
-      const elements = document.querySelectorAll(
-        '.wc-block-components-product-price:not([data-updated])'
-      );
-      elements.forEach((element) => {
-        element.innerHTML = `<p>يتم جلب السعر...</p>`;
-        element.setAttribute('data-updated', 'true');
-      });
-    };
-    
-        jQuery(document).ready(function($){ 
-         $(document).on('et_ajax_element_loaded', function (event, data) {
-                if (data.element == 'etheme_products'){
-                    console.log('custom code started to show tap');
-					updateProductPrices();
-                }
-                });
-    /*-------------------------------------------------------------------*/
-			$(document).on('etheme_product_grid_ajax_loaded', function() {
-            	console.log('etheme_product_grid_ajax_loaded is appliedddd');
-        	})
-		});
-    ";
-    wp_add_inline_script('jquery', $custom_js); // Attach the inline script after jQuery
+function add_text_and_icon_after_price($price, $product) {
+    // Only add the HTML if we're on the single product page
+    if (is_product()) {
+        $custom_html = '
+        <span style="display: inline-flex; margin-top: 5px; align-items: center; background-color: #ebf8ff; padding: 10px 5px; border-radius: 4px; font-size: 12px; font-weight: 		bold; color: #3182ce; border: 1px solid rgba(59, 130, 246, 0.1); width: 100%;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-left: 				5px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+            </svg>
+            سعر مناسب للشراء  
+        </span>';
+
+        $price .= $custom_html; // Append the custom HTML to the price
+    }
+    return $price;
 }
-add_action('wp_enqueue_scripts', 'enqueue_custom_inline_script');
+add_filter('woocommerce_get_price_html', 'add_text_and_icon_after_price', 10, 2);
 
 
 // add_action('template_redirect', 'redirect_non_logged_users_to_custom_login');
